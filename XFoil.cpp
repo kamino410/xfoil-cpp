@@ -23,6 +23,8 @@
 #include "XFoil.h"
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #define PI 3.141592654
 
@@ -351,7 +353,7 @@ bool XFoil::initialize() {
     }
     nc1 = tmp + 1;
     //		nc1 = pow(2,(nn-1)) + 1; //257 instead of ICX in original source
-    //code
+    // code
   }
 
   //---- default cm reference location
@@ -657,18 +659,16 @@ bool XFoil::initialize() {
 
 bool XFoil::abcopy() {
   int i;
+  std::stringstream ss;
   if (nb <= 1) {
     writeString("abcopy: buffer airfoil not available");
     return false;
   } else if (nb > IQX - 2) {
-    // MESSAGE
-    // QString str1, str2;
-    // str1 = QString("Maximum number of panel nodes  : %1\n").arg(IQX - 2);
-    // str2 = QString("Number of buffer airfoil points: %1\n").arg(nb);
-    // str2 += "Current airfoil cannot be set\n";
-    // str2 += "Try executing PANE at top level instead";
-    // str1 += str2;
-    // writeString(str1);
+    ss << "Maximum number of panel nodes  : " << IQX - 2 << "\n";
+    ss << "Number of buffer airfoil points: " << nb << "\n ";
+    ss << "Current airfoil cannot be set\n";
+    ss << "Try executing PANE at top level instead";
+    writeString(ss.str());
     return false;
   }
   if (n != nb) lblini = false;
@@ -819,7 +819,7 @@ bool XFoil::aecalc(int n, double x[], double y[], double t[], int itype,
   eiyy = xxint - (xcen) * (xcen)*aint;
 
   //---- set principal-axis inertias, ei11 is closest to "up-down" bending
-  //inertia
+  // inertia
   eisq = 0.25 * (eixx - eiyy) * (eixx - eiyy) + eixy * eixy;
   sgn = sign(1.0, eiyy - eixx);
   ei11 = 0.5 * (eixx + eiyy) - sgn * sqrt(eisq);
@@ -1152,7 +1152,7 @@ bool XFoil::bldif(int ityp) {
 
       if (ityp == 3)
         ald = dlcon;  //------ increased dissipation length in wake (decrease
-                      //its reciprocal)
+                      // its reciprocal)
       else
         ald = 1.0;
 
@@ -2925,7 +2925,7 @@ void XFoil::getcam(double xcm[], double ycm[], int &ncm, double xtk[],
   yl = seval(sl, y, yp, s, n);
 
   //---- go over each point, finding opposite points, getting camber and
-  //thickness
+  // thickness
   for (i = 1; i <= n; i++) {
     //------ coordinates of point on the opposite side with the same x value
     sopps(sopp, s[i], x, xp, y, yp, s, n, sl);
@@ -3240,7 +3240,7 @@ bool XFoil::getxyf(double x[], double xp[], double y[], double yp[], double s[],
 
   //	if(*pyf <= -999.0)
   //		askr( 'enter flap hinge y location (or 999 to specify
-  //y/t)^',yf); 		*pyf=0.0;//arcs added
+  // y/t)^',yf); 		*pyf=0.0;//arcs added
 
   //	if(*pyf >= 999.0) {
   //		  askr("enter flap hinge relative y/t location",yrel);
@@ -3437,6 +3437,7 @@ bool XFoil::hct(double hk, double msq, double &hc, double &hc_hk,
  */
 void XFoil::hipnt(double chpnt, double thpnt) {
   //      include 'xfoil.inc'
+  std::stringstream ss;
   double xfn[5], yfn[5], yfnp[5];  // sfn[5]
   double ybl, cxmax, cymax, txmax, tymax;
   double ycc, ytt;
@@ -3453,13 +3454,11 @@ void XFoil::hipnt(double chpnt, double thpnt) {
   yte = 0.5 * (yb[1] + yb[nb]);
   arot = atan2(yle - yte, xte - xle) / dtor;
   if (fabs(arot) > 1.0) {
-    // MESSAGE
-    // QString str, strong;
-    // str = "Warning: High does not work well on rotated foils\n";
-    // strong = QString("Current chordline angle: %1\nproceeding
-    // anyway...").arg(arot, 5, 'f', 2);
+    ss << "Warning: High does not work well on rotated foils\n";
+    ss << "Current chordline angle: " << std::setw(5) << std::fixed
+       << std::setprecision(2) << arot << "\nproceeding anyway...";
 
-    writeString("Warning: High does not work well on rotated foils\n", true);
+    writeString(ss.str(), true);
   }
 
   //---- find leftmost point location
@@ -3675,6 +3674,7 @@ bool XFoil::hst(double hk, double rt, double msq, double &hs, double &hs_hk,
  * -----------------------------------------------------------*/
 bool XFoil::iblpan() {
   int iblmax, is, ibl, i, iw;
+  std::stringstream ss;
 
   //-- top surface first
   is = 1;
@@ -3717,11 +3717,9 @@ bool XFoil::iblpan() {
   }
   iblmax = std::max(iblte[1], iblte[2]) + nw;
   if (iblmax > IVX) {
-    writeString("iblpan :  ***  bl array overflow", true);
-
-    // MESSAGE
-    // str = QString("Increase IVX to at least %1\n").arg(iblmax);
-    // writeString(str, true);
+    ss << "iblpan :  ***  bl array overflow\n";
+    ss << "Increase IVX to at least " << iblmax << "\n";
+    writeString(ss.str(), true);
     return false;
   }
 
@@ -4095,7 +4093,7 @@ bool XFoil::mhinge() {
 
 stop41:
   //---- add on bottom surface chunk bots..s[i],	missed in the do 20
-  //loop.
+  // loop.
   dx = x[i] - botx;
   dy = y[i] - boty;
   xmid = 0.5 * (botx + x[i]) - xof;
@@ -4152,6 +4150,7 @@ stop41:
  *      checking of transition onset is performed.
  * ----------------------------------------------------- */
 bool XFoil::mrchdu() {
+  std::stringstream ss;
   double vtmp[5][6], vztmp[5];
   memset(vtmp, 0, 30 * sizeof(double));
   memset(vztmp, 0, 5 * sizeof(double));
@@ -4257,7 +4256,7 @@ bool XFoil::mrchdu() {
           hkref = hk2;
 
           //--------- if current point ibl was turbulent and is now laminar,
-          //then...
+          // then...
           if (ibl < itran[is] && ibl >= itrold) {
             //---------- extrapolate baseline hk
             uem = uedg[ibl - 1][is];
@@ -4357,9 +4356,11 @@ bool XFoil::mrchdu() {
         if (dmax <= deps) goto stop110;
       }
 
-      // MESSAGE
-      // str = QString("     mrchdu: convergence failed at %1 ,  side %2, res
-      // =%3\n").arg(ibl).arg(is).arg(dmax, 4, 'f', 3); writeString(str, true);
+      ss << "     mrchdu: convergence failed at " << ibl << " ,  side " << is
+         << ", res=" << std::setw(4) << std::fixed << std::setprecision(3)
+         << dmax << "\n";
+      writeString(ss.str(), true);
+      ss.str("");
 
       if (dmax <= 0.1) goto stop109;
       //------ the current unconverged solution might still be reasonable...
@@ -4458,6 +4459,7 @@ bool XFoil::mrchdu() {
  *      checking of transition onset is performed.
  * ----------------------------------------------------*/
 bool XFoil::mrchue() {
+  std::stringstream ss;
   bool direct;
   int is, ibl, ibm, iw, itbl;
   double msq, ratlen, dsw, hklim;
@@ -4473,9 +4475,8 @@ bool XFoil::mrchue() {
   htmax = 2.5;
 
   for (is = 1; is <= 2; is++) {  // 2000
-    // MESSAGE
-    // QString str = QString("    Side %1 ...\n").arg(is);
-    // writeString(str);
+    ss << "    Side " << is << " ...\n";
+    writeString(ss.str());
 
     //---- set forced transition arc length position
     xifset(is);
@@ -4581,7 +4582,7 @@ bool XFoil::mrchue() {
             hkin(htest, msq, hktest, dummy, dummy);
 
             //---------- decide whether to do direct or inverse problem based on
-            //hk
+            // hk
             if (ibl < itran[is]) hmax = hlmax;
             if (ibl >= itran[is]) hmax = htmax;
             direct = (hktest < hmax);
@@ -4593,19 +4594,19 @@ bool XFoil::mrchue() {
             dsi = dsi + rlx * vsrez[3];
           } else {
             //---------- set prescribed hk for inverse calculation at the
-            //current station
+            // current station
             if (ibl < itran[is])
               //----------- laminar case: relatively slow increase in hk
-              //downstream
+              // downstream
               htarg = hk1 + 0.03 * (x2 - x1) / theta1;
             else if (ibl == itran[is]) {
               //----------- transition interval: weighted laminar and turbulent
-              //case
+              // case
               htarg = hk1 + (0.03 * (xt - x1) - 0.15 * (x2 - xt)) / theta1;
             } else if (wake) {
               //----------- turbulent wake case:
               //--          asymptotic wake behavior with approximate backward
-              //euler
+              // euler
               cst = 0.03 * (x2 - x1) / theta1;
               hk2 = hk1;
               hk2 = hk2 - (hk2 + cst * (hk2 - 1.0) * (hk2 - 1.0) * (hk2 - 1.0) -
@@ -4622,7 +4623,7 @@ bool XFoil::mrchue() {
               htarg =
                   hk1 - 0.15 * (x2 - x1) /
                             theta1;  //----------- turbulent case: relatively
-                                     //fast decrease in hk downstream
+                                     // fast decrease in hk downstream
 
             //---------- limit specified hk to something reasonable
             if (wake)
@@ -4630,10 +4631,11 @@ bool XFoil::mrchue() {
             else
               htarg = std::max(htarg, hmax);
 
-            // MESSAGE
-            // QString str;
-            // str = QString("     mrchue: inverse mode at %1    hk
-            // =%2\n").arg(ibl).arg(htarg, 0, 'f', 3); writeString(str);
+            ss.str("");
+            ss << "     mrchue: inverse mode at " << ibl
+               << "    hk=" << std::fixed << setprecision(3) << htarg << "\n";
+            writeString(ss.str());
+            ss.str("");
 
             //---------- try again with prescribed hk
 
@@ -4678,9 +4680,10 @@ bool XFoil::mrchue() {
 
       }  // end itbl loop
 
-      // MESSAGE
-      // str = QString("     mrchue: convergence failed at %1,  side %2, res =
-      // %3\n").arg(ibl).arg(is).arg(dmax, 0, 'f', 3); writeString(str, true);
+      ss.str("");
+      ss << "     mrchue: convergence failed at " << ibl << ",  side " << is
+         << ", res =" << std::fixed << std::setprecision(3) << dmax << "\n";
+      writeString(ss.str(), true);
 
       //------ the current unconverged solution might still be reasonable...
       if (dmax > 0.1) {
@@ -4772,18 +4775,19 @@ bool XFoil::mrchue() {
  *      depending on matyp,retyp flags.
  * -------------------------------------------- */
 bool XFoil::mrcl(double cls, double &m_cls, double &r_cls) {
+  std::stringstream ss;
   double rrat, cla;
   cla = std::max(cls, 0.000001);
   if (retyp < 1 || retyp > 3) {
-    // MESSAGE
-    // QString str("    mrcl:  illegal Re(cls) dependence trigger, Setting fixed
-    // Re "); writeString(str, true);
+    writeString(
+        "    mrcl:  illegal Re(cls) dependence trigger, Setting fixed Re ",
+        true);
     retyp = 1;
   }
   if (matyp < 1 || matyp > 3) {
-    // MESSAGE
-    // QString str("    mrcl:  illegal Mach(cls) dependence trigger\n Setting
-    // fixed Mach"); writeString(str, true);
+    writeString(
+        "    mrcl:  illegal Mach(cls) dependence trigger\n Setting fixed Mach",
+        true);
     matyp = 1;
   }
 
@@ -4837,9 +4841,10 @@ bool XFoil::mrcl(double cls, double &m_cls, double &r_cls) {
   if (rrat > 100.0) {
     // TRACE("     artificially limiting re to %f\n",reinf1*100.0);
     writeString("mrcl: cl too low for chosen Re(Cl) dependence\n", true);
-    // MESSAGE
-    // str = QString("      artificially limiting Re to %1\n").arg(reinf1*100.0,
-    // 0, 'f', 0); writeString(str, true);
+    ss << "      artificially limiting Re to " << std::fixed
+       << std::setprecision(0) << reinf1 * 100.0 << "\n";
+    writeString(ss.str(), true);
+    ss.str("");
     reinf = reinf1 * 100.0;
     r_cls = 0.0;
   }
@@ -5277,7 +5282,7 @@ stop11:
         if (s[i] <= sbcorn) goto stop252;
 
         //---------- move remainder of panel nodes to make room for additional
-        //node
+        // node
         for (j = n; j >= i; j--) {
           x[j + 1] = x[j];
           y[j + 1] = y[j];
@@ -5295,7 +5300,7 @@ stop11:
         s[i] = sbcorn;
 
         //---------- shift nodes adjacent to corner to keep panel sizes
-        //comparable
+        // comparable
         if (i - 2 >= 1) {
           s[i - 1] = 0.5 * (s[i] + s[i - 2]);
           x[i - 1] = seval(s[i - 1], xb, xbp, sb, nb);
@@ -6051,10 +6056,10 @@ bool XFoil::qdcalc() {
 
   if (!ladij) {
     //----- calculate source influence matrix for airfoil surface if it doesn't
-    //exist
+    // exist
     for (j = 1; j <= n; j++) {
       //------- multiply each dpsi/sig vector by inverse of factored dpsi/dgam
-      //matrix
+      // matrix
       for (iu = 0; iu < IQX; iu++)
         bbb[iu] = bij[iu][j];  // techwinder : create a dummy array
       baksub(n + 1, aij, aijpiv, bbb);
@@ -6101,7 +6106,7 @@ bool XFoil::qdcalc() {
   }
 
   //**** now we need to calculate the influence of sources on the wake
-  //velocities
+  // velocities
 
   //---- calculate dqtan/dgam and dqtan/dsig at the wake points
 
@@ -6123,7 +6128,7 @@ bool XFoil::qdcalc() {
   }
 
   //---- add on effect of all sources on airfoil vorticity which effects wake
-  //qtan
+  // qtan
   for (i = n + 1; i <= n + nw; i++) {
     int iw = i - n;
 
@@ -6587,11 +6592,12 @@ bool XFoil::segspld(double x[], double xs[], double s[], int n, double xs1,
 bool XFoil::setbl() {
   //-------------------------------------------------
   //	   sets up the bl newton system coefficients for the current bl
-  //variables
+  // variables
   //     and the edge velocities received from setup. the local bl system
   //     coefficients are then incorporated into the global newton system.
   //-------------------------------------------------
 
+  std::stringstream ss;
   int i = 0, ibl = 0, iv = 0, iw = 0, j = 0, js = 0, jv = 0, jbl = 0, is = 0;
   int ile1 = 0, ile2 = 0, ite1 = 0, ite2 = 0, jvte1 = 0, jvte2 = 0;
   double usav[IVX + 1][ISX];
@@ -6800,7 +6806,7 @@ bool XFoil::setbl() {
       d2_a = d2_u2 * u2_a;
 
       //---- "forced" changes due to mismatch between uedg and
-      //usav=uinv+dij*mass
+      // usav=uinv+dij*mass
       due2 = uedg[ibl][is] - usav[ibl][is];
       dds2 = d2_u2 * due2;
 
@@ -6816,9 +6822,9 @@ bool XFoil::setbl() {
       if (ibl == itran[is] && !tran) {
         // TRACE("setbl: xtr???  n1=%d n2=%d: \n", ampl1, ampl2);
 
-        // MESSAGE
-        // QString str = QString("setbl: xtr???  n1=%1 n2=%2:
-        // \n").arg(ampl1).arg(ampl2); writeString(str);
+        ss << "setbl: xtr???  n1=" << ampl1 << " n2=" << ampl2 << ":\n";
+        writeString(ss.str());
+        ss.str("");
       }
 
       //---- assemble 10x4 linearized system for dctau, dth, dds, due, dxi
@@ -6826,7 +6832,7 @@ bool XFoil::setbl() {
 
       if (ibl == iblte[is] + 1) {
         //----- define quantities at start of wake, adding te base thickness to
-        //dstar
+        // dstar
         tte = thet[iblte[1]][1] + thet[iblte[2]][2];
         dte = dstr[iblte[1]][1] + dstr[iblte[2]][2] + ante;
         cte = (ctau[iblte[1]][1] * thet[iblte[1]][1] +
@@ -6846,7 +6852,7 @@ bool XFoil::setbl() {
         cte_tte2 = (ctau[iblte[2]][2] - cte) / tte;
 
         //----- re-define d1 sensitivities wrt m since d1 depends on both te ds
-        //values
+        // values
         for (js = 1; js <= 2; js++) {
           for (jbl = 2; jbl <= nbl[js]; jbl++) {
             j = ipan[jbl][js];
@@ -6866,7 +6872,7 @@ bool XFoil::setbl() {
       }
 
       //---- save wall shear and equil. max shear coefficient for plotting
-      //output
+      // output
       tau[ibl][is] = 0.5 * r2 * u2 * u2 * cf2;
       dis[ibl][is] = r2 * u2 * u2 * u2 * di2 * hs2 * 0.5;
       ctq[ibl][is] = cq2;
@@ -7032,23 +7038,22 @@ bool XFoil::setbl() {
 
       //---- set bl variables for next station
       //			for (icom=1; icom<= ncom;icom++)
-      //com1[icom] = com2[icom];
+      // com1[icom] = com2[icom];
       stepbl();
 
       //---- next streamwise station
     }
 
     if (tforce[is]) {
-      // MESSAGE
-      // strOut = QString("     Side %1, forced transition at x/c = %2 %3\n")
-      //.arg(is).arg(xoctr[is], 0, 'f', 4).arg(itran[is]);
-      // writeString(strOut);
-
+      ss << "     Side " << is << ", forced transition at x/c = " << std::fixed
+         << std::setprecision(4) << xoctr[is] << " " << itran[is] << "\n";
+      writeString(ss.str());
+      ss.str("");
     } else {
-      // MESSAGE
-      // strOut = QString("     Side %1,  free  transition at x/c = %2
-      // %3\n").arg(is).arg(xoctr[is], 0, 'f', 4).arg(itran[is]);
-      // writeString(strOut);
+      ss << "     Side " << is << ",  free  transition at x/c = " << std::fixed
+         << std::setprecision(4) << xoctr[is] << " " << itran[is] << "\n";
+      writeString(ss.str());
+      ss.str("");
     }
 
     //---- next airfoil side
@@ -8226,7 +8231,7 @@ bool XFoil::trchek() {
     if ((ampl2 > amcrit && ampl2 + rlx * da2 < amcrit) ||
         (ampl2 < amcrit && ampl2 + rlx * da2 > amcrit))
       //------ limited newton step so ampl2 doesn't step across amcrit either
-      //way
+      // way
       ampl2 = amcrit;
     else
       //------ regular newton step
@@ -9067,7 +9072,7 @@ bool XFoil::viscal() {
     iblpan();
 
     //	----- calculate surface arc length array for current stagnation point
-    //location
+    // location
     xicalc();
 
     //	----- set  bl position -> system line  pointers
@@ -9138,6 +9143,7 @@ bool XFoil::ViscalEnd() {
 
 bool XFoil::ViscousIter() {
   //	Performs one iteration
+  std::stringstream ss;
   double eps1 = 0.0001;
 
   setbl();  //	------ fill newton system for bl variables
@@ -9164,24 +9170,25 @@ bool XFoil::ViscousIter() {
 
   //	------ display changes and test for convergence
   if (rlx < 1.0) {
-    // MESSAGE
-    // str = QString("     rms:%1   max:%2 at %3 %4   rlx:%5\n")
-    //.arg(rmsbl, 0, 'e', 2).arg(rmxbl, 0, 'e',
-    //2).arg(imxbl).arg(ismxbl).arg(rlx, 0, 'f', 3);
+    ss << "     rms:" << std::scientific << std::setprecision(2) << rmsbl
+       << "   max:" << std::scientific << std::setprecision(2) << rmxbl
+       << " at " << imxbl << " " << ismxbl << "   rlx:" << std::fixed
+       << std::setprecision(3) << "\n";
   } else if (fabs(rlx - 1.0) < 0.001) {
-    // MESSAGE
-    // str = QString("     rms:%1   max:%2 at %3 %4\n")
-    //.arg(rmsbl, 0, 'e', 2).arg(rmxbl, 0, 'e', 2).arg(imxbl).arg(ismxbl);
+    ss << "     rms:" << std::scientific << std::setprecision(2) << rmsbl
+       << "   max:" << std::scientific << std::setprecision(2) << rmxbl
+       << " at " << imxbl << " " << ismxbl << "\n";
   }
 
-  // writeString(str);
+  writeString(ss.str());
+  ss.str("");
 
   cdp = cd - cdf;
 
-  std::stringstream ss;
   ss << "     a=" << alfa / dtor << "    cl=" << cl << "\n     cm=" << cm
      << "  cd=" << cd << " => cdf=" << cdf << " cdp=" << cdp << "\n\n";
   writeString(ss.str());
+  ss.str("");
 
   // int pos = str.indexOf("QN");
   // if (pos > 0) {
@@ -9275,6 +9282,7 @@ bool XFoil::xicalc() {
  * 	   sets forced-transition bl coordinate locations.
  * ----------------------------------------------------- */
 bool XFoil::xifset(int is) {
+  std::stringstream ss;
   double chx, chy, chsq, str;
 
   if (xstrip[is] >= 1.0) {
@@ -9313,9 +9321,8 @@ bool XFoil::xifset(int is) {
   }
 
   if (xiforc < 0.0) {
-    // MESSAGE
-    // QString str = QString(" ***  stagnation point is past trip on side
-    // %1\n").arg(is); writeString(str);
+    ss << " ***  stagnation point is past trip on side " << is << "\n";
+    writeString(ss.str());
 
     xiforc = xssi[iblte[is]][is];
   }
@@ -10048,7 +10055,7 @@ void XFoil::scinit(int n, double x[], double xp[], double y[], double yp[],
       dyds = deval(sic, y, yp, s, n);
 
       //------ set q(w) - qo   (qo defined so that q(w)-qo = 0  at  w = 0 , 2
-      //PI)
+      // PI)
       qim = atan2(dxds, -dyds) - 0.5 * (wc[ic] - PI) * (1.0 + agte) - qim0;
       piq[ic] = complex<double>(0.0, qim);
     }
@@ -10082,7 +10089,7 @@ void XFoil::scinit(int n, double x[], double xp[], double y[], double yp[],
 
       if (std::abs(dcn) < ceps) break;
       //			if(real(dcn)*real(dcn)+imag(dcn)*imag(dcn) <
-      //ceps*ceps) break;
+      // ceps*ceps) break;
     }
 
     double dscmax = 0.0;
@@ -10393,6 +10400,7 @@ void XFoil::qccalc(int ispec, double *alfa, double *cl, double *cm, double minf,
   //    ispec=1 or 2.  The cl calculation uses the
   //    transformed karman-tsien cp.
   //---------------------------------------------------
+  std::stringstream ss;
   complex<double> dz, za, eia, cmt, cft, cft_a;
   //	double rr1, rr2, rr3;
   int icp, ic, ipass;
@@ -10502,9 +10510,9 @@ void XFoil::qccalc(int ispec, double *alfa, double *cl, double *cm, double minf,
       if (fabs(dalfa) < aeps) return;
     }
   }
-  // MESSAGE
-  // QString str = QString("qccalc: cl convergence failed.  dalpha
-  // =%1").arg(dalfa, 0, 'f', 4); writeString(str);
+  ss << "qccalc: cl convergence failed.  dalpha=" << std::fixed
+     << std::setprecision(4) << dalfa << "\n";
+  writeString(ss.str());
 }
 
 void XFoil::mapgen(int n, double x[], double y[]) {
@@ -11009,15 +11017,17 @@ void XFoil::smooq(int kq1, int kq2, int kqsp) {
 
 void XFoil::HanningFilter(double cfilt, std::stringstream &ts) {
   //----- apply modified hanning filter to cn coefficients
+  std::stringstream ss;
   double clq;
   cnfilt(cfilt);
   piqsum();
   qspcir();
 
-  // MESSAGE
-  // QString str0 = QString("  current:\n     alpha=%1\n     Cl=%2\n
-  // Cm=%3").arg(algam / dtor, 9, 'f', 4).arg(clgam, 11, 'f', 6).arg(cmgam, 11,
-  // 'f', 6); ts << str0 << "\n";
+  ss << "  current:\n     alpha=" << std::setw(9) << std::fixed
+     << std::setprecision(4) << algam / dtor << "\n     Cl=" << std::setw(11)
+     << std::fixed << std::setprecision(6) << clgam
+     << "\n     Cm=" << std::setw(11) << std::fixed << std::setprecision(6)
+     << cmgam << "\n";
   for (int kqsp = 1; kqsp <= nqsp; kqsp++) {
     //		qspint(alqsp[kqsp],qspec[kqsp][1],qinf,minf,clq,cmqsp[kqsp]);
     qspint(kqsp, clq);
@@ -11025,12 +11035,14 @@ void XFoil::HanningFilter(double cfilt, std::stringstream &ts) {
     //------- set new cl only if alpha is prescribed
     if (iacqsp == 1) clqsp[kqsp] = clq;
 
-    // MESSAGE
-    // QString str1 = QString("  QSpec:\n     alpha=%2\n     Cl=%3\n
-    // Cm=%4").arg(alqsp[kqsp] / dtor, 9, 'f', 4).arg(clqsp[kqsp], 11, 'f',
-    // 6).arg(cmqsp[kqsp], 11, 'f', 6); ts << str1 << "\n";
+    ss << "  QSpec:\n     alpha=" << std::setw(9) << std::fixed
+       << std::setprecision(4) << alqsp[kqsp] / dtor
+       << "\n     Cl=" << std::setw(11) << std::fixed << std::setprecision(6)
+       << clqsp[kqsp] << "\n     Cm=" << std::setw(11) << std::fixed
+       << std::setprecision(6) << cmqsp[kqsp] << "\n";
   }
   lqspec = true;
+  writeString(ss.str());
 }
 
 void XFoil::cnfilt(double ffilt) {
@@ -11524,7 +11536,7 @@ bool XFoil::mixed(int kqsp) {
     scalc(x, y, s, n);
 
     //---- set correct surface speed over target segment including dof
-    //contributions
+    // contributions
     for (i = iq1; i <= iq2; i++) {
       gam[i] = qspec[kqsp][i] + qdof0 * qf0[i] + qdof1 * qf1[i] +
                qdof2 * qf2[i] + qdof3 * qf3[i];
@@ -11641,7 +11653,7 @@ bool XFoil::ExecQDES() {
   cpcalc(n, qinv, qinf, minf, cpi);
 
   //----- influence coefficients & other stuff is no longer valid for new
-  //airfoil
+  // airfoil
   lgamu = false;
   lqinu = false;
   lwake = false;
