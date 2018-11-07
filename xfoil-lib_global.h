@@ -1,0 +1,4 @@
+#ifndef XFOILLIB_GLOBAL_H
+#define XFOILLIB_GLOBAL_H
+
+#endif  // XFOILLIB_GLOBAL_H
