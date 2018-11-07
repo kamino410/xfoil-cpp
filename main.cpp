@@ -1,5 +1,7 @@
 #include <iostream>
+#include <fstream>
 #include <sstream>
+#include <string>
 
 #include "XFoil.h"
 
@@ -61,28 +63,60 @@ bool iterate(XFoil *foil) {
   return false;
 }
 
-int main() {
-  auto naca = new XFoil();
-  naca->naca4(4412, 100 / 2);
-
-  double xb[604], yb[604], x[604], y[604], nx[604], ny[604];
-  for (int i = 0; i < naca->nb; i++) {
-    xb[i] = naca->xb[i + 1];
-    yb[i] = naca->yb[i + 1];
-    x[i] = naca->xb[i + 1];
-    y[i] = naca->yb[i + 1];
+int loadDatFile(std::string filename, double x[604], double y[604]) {
+  std::ifstream fs(filename);
+  if (!fs) {
+    std::cout << "Failed to open dat file" << std::endl;
+    return -1;
   }
+
+  std::string line;
+  std::getline(fs, line);
+  std::cout << "Foil name : " << line << std::endl;
+  int cnt = 0;
+  while (!fs.eof()) {
+    std::getline(fs, line);
+
+    line.erase(0, line.find_first_not_of(" \t"));
+    int endOfX = line.find_first_of(" \t");
+    if (endOfX == -1) continue;
+
+    std::string sx = line.substr(0, endOfX);
+    std::string sy = line.substr(endOfX);
+
+    x[cnt] = atof(sx.c_str());
+    y[cnt] = atof(sy.c_str());
+    cnt++;
+  }
+  return cnt;
+}
+
+int main() {
+  double x[604], y[604], nx[604], ny[604];
+  int n = 0;
+
+  std::stringstream ss;
+
+  // auto naca = new XFoil();
+  // naca->naca4(4412, 100 / 2);
+  // for (int i = 0; i < naca->nb; i++) {
+  //   x[i] = naca->xb[i + 1];
+  //   y[i] = naca->yb[i + 1];
+  // }
+  // n = naca->nb;
+
+  n = loadDatFile("sample/CLARK_Y.dat", x, y);
+  if (n == -1) return 1;
 
   XFoil *foil = new XFoil();
 
-  std::stringstream ss;
-  if (!foil->initXFoilGeometry(naca->nb, x, y, nx, ny)) {
+  if (!foil->initXFoilGeometry(n, x, y, nx, ny)) {
     std::cout << "Initialization error!" << std::endl;
-    return 0;
+    return 1;
   }
   if (!foil->initXFoilAnalysis(100000, 0, 0.0, 9.0, 1.0, 1.0, 1, 1, true, ss)) {
     std::cout << "Initialization error!" << std::endl;
-    return 0;
+    return 1;
   }
 
   for (double alpha = 0; alpha < 15; alpha += 0.5) {
@@ -98,8 +132,7 @@ int main() {
 
     if (!foil->specal()) {
       std::cout << "Invalid Analysis Settings" << std::endl;
-      getchar();
-      return 0;
+      return 1;
     }
     foil->lwake = false;
     foil->lvconv = false;
