@@ -24,8 +24,7 @@
  *@file This class defines the Xfoil object.
  */
 
-#ifndef XFOIL_H
-#define XFOIL_H
+#pragma once
 
 /**
 *@class XFoil
@@ -41,7 +40,6 @@ Harold Youngren. See http://raphael.mit.edu/xfoil for more information.
 #include <string>
 #include <iomanip>
 
-#include "xfoil-lib_global.h"
 #include "xfoil_params.h"
 
 using namespace std;
@@ -927,5 +925,3 @@ class XFoil {
 
   //-----End Specific Inverse MDES-------------------------------
 };
-
-#endif
