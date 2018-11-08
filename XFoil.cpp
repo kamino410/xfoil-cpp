@@ -22,10 +22,6 @@
 
 #include "XFoil.h"
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-
 #define PI 3.141592654
 
 bool XFoil::s_bCancel = false;

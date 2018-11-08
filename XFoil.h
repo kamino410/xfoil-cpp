@@ -35,15 +35,13 @@ This is a translation to C++ of the original Fortran code of Mark Drela and
 Harold Youngren. See http://raphael.mit.edu/xfoil for more information.
 */
 
-#include "xfoil-lib_global.h"
-
-#include <math.h>
-#include <algorithm>
 #include <complex>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 
+#include "xfoil-lib_global.h"
 #include "xfoil_params.h"
 
 using namespace std;
